@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
-	"regexp"
 	"strings"
 )
 
@@ -39,16 +38,8 @@ func listVariables(environmentName string) error {
 	variableListCommand := exec.Command("gh", "variable", "list", "-e", environmentName)
 	output, err := variableListCommand.CombinedOutput()
 	if err != nil {
+		fmt.Printf("Error running gh variable list: %v\nOutput:\n%s\n", err, output)
 		return fmt.Errorf("error running gh variable list: %v", err)
-	}
-
-	// Remove timestamp from each line in the output
-	lines := strings.Split(string(output), "\n")
-	var filteredOutput []string
-	for _, line := range lines {
-		// Assuming timestamp is in the format "YYYY-MM-DDTHH:MM:SSZ"
-		lineWithoutTimestamp := regexp.MustCompile(`\s+\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$`).ReplaceAllString(line, "")
-		filteredOutput = append(filteredOutput, lineWithoutTimestamp)
 	}
 
 	// Create or open the file for writing
@@ -59,17 +50,28 @@ func listVariables(environmentName string) error {
 	}
 	defer file.Close()
 
-	// Write variables and values to the file in the format VARIABLE=VALUE
-	for _, line := range filteredOutput {
-		parts := strings.Fields(line)
-		if len(parts) >= 2 {
-			fmt.Fprintf(file, "%s=%s\n", parts[0], parts[1])
+	// Parse the tab-separated values
+	lines := strings.Split(string(output), "\n")
+	for _, line := range lines {
+		// Skip empty lines
+		if line == "" {
+			continue
+		}
+
+		// Split the line into parts: variable name, value, and timestamp
+		parts := strings.Split(line, "\t")
+		if len(parts) >= 3 {
+			variableName := parts[0]
+			value := parts[1] // Only consider the second part as the value
+			// Write the variable and value to the file
+			fmt.Fprintf(file, "%s=%s\n", variableName, value)
 		}
 	}
 
 	fmt.Printf("Variables for environment %s written to file %s\n", environmentName, fileName)
 	return nil
 }
+
 
 func ListEnvironments() ([]string, error) {
 
