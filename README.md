@@ -4,3 +4,49 @@
 
 # ghvars
 CLI tool to view, list, set, and delete github variables with ease
+
+# Install ghvars
+
+## MacOS
+
+```bash
+brew install arnoldj-devops/tools/ghvars
+```
+
+## Ubuntu
+
+```bash
+curl -s https://raw.githubusercontent.com/arnoldj-devops/ghvars/master/scripts/install.sh | bash
+```
+
+# Usage
+
+**To fetch github variables** <br />
+
+```bash
+ghvars get
+```
+
+**To set github variables from file**
+
+By default set command runs for all github environments. To run for specific environment, use `-e option` <br />
+<br />
+**To disconnect instance** <br />
+
+```bash
+ghvars set -e dev
+```
+
+<br />
+
+**For all commands** <br />
+
+```bash
+ghvars --help
+```
+
+ <br />
+
+# Prerequisites:
+
+- [gh](https://cli.github.com/)
